@@ -4,10 +4,10 @@ I like Alloyed Collective, but one thing I don't love is how it hijacks the stag
 
 - Scorched Acres: 20%
 - Sulfur Pools: 33%
-- [Fogbound Lagoon](https://thunderstore.io/package/JaceDaDorito/FogboundLagoon/): 33%
-- [Remote Village](https://thunderstore.io/package/viliger/RemoteVillage/): 33%
 - Rallypoint Delta: 50%
 - Iron Alluvium: 75%
+- [Fogbound Lagoon](https://thunderstore.io/package/JaceDaDorito/FogboundLagoon/): 33%
+- [Remote Village](https://thunderstore.io/package/viliger/RemoteVillage/): 33%
 - Repurposed Crater (stage 4): 60%
 
 On average, this gives the Access Node about a 45% chance of spawning on stage 3, slightly less if supported custom stages are installed.
