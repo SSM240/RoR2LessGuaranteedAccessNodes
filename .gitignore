@@ -399,3 +399,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# release zip
+SSM24-LessGuaranteedAccessNodes-*.zip
