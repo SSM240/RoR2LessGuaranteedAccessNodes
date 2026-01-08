@@ -25,7 +25,9 @@ namespace RoR2LessGuaranteedAccessNodes
             ["Iron Alluvium/Aurora"] = 0.75f,
             ["Repurposed Crater"] = 0.6f,
             ["Fogbound Lagoon"] = 0.33f,
+            ["Remote Village"] = 0.33f,
         };
+        private static readonly HashSet<string> moddedStages = ["Fogbound Lagoon", "Remote Village"];
 
         private static readonly Dictionary<string, float> stageConfigs = new();
 
@@ -49,10 +51,10 @@ namespace RoR2LessGuaranteedAccessNodes
             foreach (KeyValuePair<string, float> defaultConfig in defaultStageConfigs)
             {
                 string stageName = defaultConfig.Key;
+                string category = moddedStages.Contains(stageName) ? "Modded Stages" : "Default Stages";
                 ConfigEntry<float> config = Config.Bind(
-                    "Stages", stageName, defaultConfig.Value, $"Chance for spawn on {stageName}");
+                    category, stageName, defaultConfig.Value, $"Chance for spawn on {stageName}");
                 stageConfigs[stageName] = config.Value;
-                Logger.LogDebug($"{stageName}: {config.Value}");
             }
         }
 
@@ -92,6 +94,7 @@ namespace RoR2LessGuaranteedAccessNodes
                 "ironalluvium" => stageConfigs["Iron Alluvium/Aurora"],
                 "ironalluvium2" => stageConfigs["Iron Alluvium/Aurora"],
                 "FBLScene" => stageConfigs["Fogbound Lagoon"],
+                "agatevillage" => stageConfigs["Remote Village"],
                 "repurposedcrater" => stageConfigs["Repurposed Crater"],
                 _ => 0.5f,
             };
