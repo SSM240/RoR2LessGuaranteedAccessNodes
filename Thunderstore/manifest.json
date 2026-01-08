@@ -1,7 +1,7 @@
 ﻿{
 	"name": "LessGuaranteedAccessNodes",
 	"version_number": "1.0.0",
-	"website_url": "",
+	"website_url": "https://github.com/SSM240/RoR2LessGuaranteedAccessNodes",
 	"description": "Makes Access Nodes a chance to spawn, instead of guaranteed. Will be guaranteed on the second attempt that run.",
 	"dependencies": [
 		"bbepis-BepInExPack-5.4.2108",
