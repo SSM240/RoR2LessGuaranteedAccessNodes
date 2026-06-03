@@ -1,6 +1,6 @@
 ﻿{
 	"name": "LessGuaranteedAccessNodes",
-	"version_number": "1.0.0",
+	"version_number": "1.1.0",
 	"website_url": "https://github.com/SSM240/RoR2LessGuaranteedAccessNodes",
 	"description": "Makes Access Nodes a chance to spawn on stage 3, instead of guaranteed. Still guaranteed later in the run.",
 	"dependencies": [
