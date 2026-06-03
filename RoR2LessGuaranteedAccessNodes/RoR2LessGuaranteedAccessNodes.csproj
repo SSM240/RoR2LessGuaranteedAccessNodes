@@ -21,4 +21,10 @@
 		<PackageReference Include="RiskOfRain2.GameLibs" Version="1.4.1-r.0" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="RiskySotS">
+	    <HintPath>lib-stripped\RiskySotS-stripped.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>

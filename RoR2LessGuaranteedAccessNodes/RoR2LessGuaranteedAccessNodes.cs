@@ -6,10 +6,14 @@ using Mono.Cecil.Cil;
 using BepInEx.Logging;
 using System.Collections.Generic;
 using BepInEx.Configuration;
+using System.Reflection;
+using System;
+using MonoMod.RuntimeDetour;
 
 namespace RoR2LessGuaranteedAccessNodes
 {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+    [BepInDependency("com.RiskyLives.RiskySotS", BepInDependency.DependencyFlags.SoftDependency)]
     public class RoR2LessGuaranteedAccessNodes : BaseUnityPlugin
     {
         public const string PluginGUID = PluginAuthor + "." + PluginName;
@@ -24,12 +28,15 @@ namespace RoR2LessGuaranteedAccessNodes
             ["Sulfur Pools"] = 0.33f,
             ["Iron Alluvium/Aurora"] = 0.75f,
             ["Repurposed Crater"] = 0.6f,
+            ["Treeborn Colony / Golden Dieback"] = 0.33f,
             ["Fogbound Lagoon"] = 0.33f,
             ["Remote Village"] = 0.33f,
         };
         private static readonly HashSet<string> moddedStages = ["Fogbound Lagoon", "Remote Village"];
 
         private static readonly Dictionary<string, float> stageConfigs = new();
+
+        private bool riskySotsLoaded = false;
 
         public void Awake()
         {
@@ -38,12 +45,23 @@ namespace RoR2LessGuaranteedAccessNodes
             InitializeSettings();
 
             IL.RoR2.AccessCodesMissionController.OnStartServer += IL_ModifyAccessCodesMissionController;
+
+            riskySotsLoaded = BepInEx.Bootstrap.Chainloader.PluginInfos.ContainsKey("com.RiskyLives.RiskySotS");
+            if (riskySotsLoaded)
+            {
+                RiskySotsInterop.Load();
+            }
         }
 
         // for ScriptEngine compat
         public void OnDestroy()
         {
             IL.RoR2.AccessCodesMissionController.OnStartServer -= IL_ModifyAccessCodesMissionController;
+
+            if (riskySotsLoaded)
+            {
+                RiskySotsInterop.Unload();
+            }
         }
 
         private void InitializeSettings()
@@ -52,8 +70,12 @@ namespace RoR2LessGuaranteedAccessNodes
             {
                 string stageName = defaultConfig.Key;
                 string category = moddedStages.Contains(stageName) ? "Modded Stages" : "Default Stages";
-                ConfigEntry<float> config = Config.Bind(
-                    category, stageName, defaultConfig.Value, $"Chance for spawn on {stageName}");
+                string desc = $"Chance for spawn on {stageName}";
+                if (stageName == "Treeborn Colony / Golden Dieback")
+                {
+                    desc += "\nDoes nothing unless a mod like RiskySotS adds Access Node spawns to this stage";
+                }
+                ConfigEntry<float> config = Config.Bind(category, stageName, defaultConfig.Value, desc);
                 stageConfigs[stageName] = config.Value;
             }
         }
@@ -74,13 +96,13 @@ namespace RoR2LessGuaranteedAccessNodes
         private const string RejectedAccessNodesOnce = "ssm_RejectedAccessNodes";
         private const string SeenAccessNodesOnce = "ssm_SeenAccessNodes";
 
-        private bool ShouldAccessNodesSpawn()
+        internal static bool ShouldAccessNodesSpawn()
         {
             // guarantee spawn on specifically the second attempt this run if it was rejected the first time
             if (Run.instance.GetEventFlag(RejectedAccessNodesOnce) 
                 && !Run.instance.GetEventFlag(SeenAccessNodesOnce))
             {
-                Logger.LogInfo("Guaranteeing Access Node spawn...");
+                Log.Info("Guaranteeing Access Node spawn...");
                 Run.instance.SetEventFlag(SeenAccessNodesOnce);
                 return true;
             }
@@ -96,11 +118,13 @@ namespace RoR2LessGuaranteedAccessNodes
                 "FBLScene" => stageConfigs["Fogbound Lagoon"],
                 "agatevillage" => stageConfigs["Remote Village"],
                 "repurposedcrater" => stageConfigs["Repurposed Crater"],
+                "habitat" => stageConfigs["Treeborn Colony / Golden Dieback"],
+                "habitatfall" => stageConfigs["Treeborn Colony / Golden Dieback"],
                 _ => 0.5f,
             };
 
             float roll = Run.instance.stageRng.nextNormalizedFloat;
-            Logger.LogDebug($"{sceneName}: rolled {roll} (needed: <{chance})");
+            Log.Debug($"{sceneName}: rolled {roll} (needed: <{chance})");
             if (roll < chance)
             {
                 Run.instance.SetEventFlag(SeenAccessNodesOnce);
