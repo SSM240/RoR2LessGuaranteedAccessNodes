@@ -21,6 +21,9 @@ namespace RoR2LessGuaranteedAccessNodes
         public const string PluginName = "LessGuaranteedAccessNodes";
         public const string PluginVersion = "1.0.0";
 
+        private static ConfigEntry<bool> guaranteedOnSecondRoll;
+        private static ConfigEntry<bool> guaranteedAfterLoop;
+
         private static readonly Dictionary<string, float> defaultStageConfigs = new()
         {
             ["Scorched Acres"] = 0.2f,
@@ -66,6 +69,14 @@ namespace RoR2LessGuaranteedAccessNodes
 
         private void InitializeSettings()
         {
+            guaranteedOnSecondRoll = Config.Bind("Basic Settings", "Guaranteed by Second Roll", true,
+                """
+                If the first Access Node roll fails, guarantee the spawn on the second roll.
+                Will not do anything if the first roll succeeds.
+                """);
+            guaranteedAfterLoop = Config.Bind("Basic Settings", "Guaranteed After Looping", false,
+                "Guarantees Access Node spawn after looping at least once.");
+
             foreach (KeyValuePair<string, float> defaultConfig in defaultStageConfigs)
             {
                 string stageName = defaultConfig.Key;
@@ -98,11 +109,19 @@ namespace RoR2LessGuaranteedAccessNodes
 
         internal static bool ShouldAccessNodesSpawn()
         {
-            // guarantee spawn on specifically the second attempt this run if it was rejected the first time
-            if (Run.instance.GetEventFlag(RejectedAccessNodesOnce) 
+            // guarantee spawn post-loop if setting is turned on
+            if (guaranteedAfterLoop.Value && Run.instance.loopClearCount > 0)
+            {
+                Log.Info("Guaranteeing post-loop Access Node spawn...");
+                return true;
+            }
+
+            // guarantee spawn on the second attempt this run if it was rejected the first time
+            if (guaranteedOnSecondRoll.Value
+                && Run.instance.GetEventFlag(RejectedAccessNodesOnce) 
                 && !Run.instance.GetEventFlag(SeenAccessNodesOnce))
             {
-                Log.Info("Guaranteeing Access Node spawn...");
+                Log.Info("Guaranteeing second-attempt Access Node spawn...");
                 Run.instance.SetEventFlag(SeenAccessNodesOnce);
                 return true;
             }
